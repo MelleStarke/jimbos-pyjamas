@@ -1,5 +1,25 @@
 package shared_package;
 
-public class Aggression {
+import lejos.robotics.subsumption.Behavior;
+
+public class Aggression implements Behavior {
+
+	@Override
+	public boolean takeControl() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void action() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void suppress() {
+		// TODO Auto-generated method stub
+		
+	}
 
 }
