@@ -6,8 +6,7 @@ public class Aggression implements Behavior {
 
 	@Override
 	public boolean takeControl() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
