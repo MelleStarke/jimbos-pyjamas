@@ -28,6 +28,7 @@ public class AmbientSensor {
 	 */
 	public float getLeftAmbiance() {
 		this.leftProvider.fetchSample(leftSample, 0);
+		//System.out.println("L: "+leftSample[0]+"\tR: "+rightSample[0]);
 		return leftSample[0];
 	}
 

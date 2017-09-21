@@ -20,22 +20,22 @@ public class Aggression implements Behavior {
 	@Override
 	public void action() {
 		adjustMotors2();
-		Motor.A.forward();
 		Motor.D.forward();
+		Motor.A.forward();
 	}
 
 	private void adjustMotors() {
 		float leftSpeed = 100 * 1 / amb.getRatio() * amb.getOverallAmbiance();
 		float rightSpeed = 100 * amb.getRatio() * amb.getOverallAmbiance();
-		Motor.A.setSpeed(leftSpeed);
-		Motor.D.setSpeed(rightSpeed);
+		Motor.D.setSpeed(leftSpeed);
+		Motor.A.setSpeed(rightSpeed);
 	}
 
 	private void adjustMotors2() {
-		float leftSpeed = 100 * amb.getRightAmbiance();
-		float rightSpeed = 100 * amb.getLeftAmbiance();
-		Motor.A.setSpeed(leftSpeed);
-		Motor.D.setSpeed(rightSpeed);
+		float leftSpeed = 600 * amb.getRightAmbiance() + 100;
+		float rightSpeed = 600 * amb.getLeftAmbiance() + 100;
+		Motor.D.setSpeed(leftSpeed);
+		Motor.A.setSpeed(rightSpeed);
 	}
 
 	@Override
