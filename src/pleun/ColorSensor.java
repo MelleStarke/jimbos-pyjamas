@@ -1,5 +1,6 @@
-package braitenberg;
+package pleun;
 
+import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.robotics.Color;
@@ -24,8 +25,9 @@ class ColorSensor {
     private float[] rgbBlue;
     private float[] rgbRed;
 
-    public ColorSensor() {
-        this.colorSensor = new EV3ColorSensor(SensorPort.S2);
+    public ColorSensor(int port) {
+    	// right 3 & left 4
+        this.colorSensor = new EV3ColorSensor( LocalEV3.get().getPort( "S" + port ));
         this.redProvider = colorSensor.getRedMode();
         this.rgbProvider = colorSensor.getRGBMode();
         this.ambient = colorSensor.getAmbientMode();
