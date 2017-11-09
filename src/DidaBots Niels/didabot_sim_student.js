@@ -210,7 +210,7 @@ function init() {  // called once when loading HTML file
                                     role: 'box'});
   };
   const startX = 100, startY = 100,
-        nBoxX = simInfo.nBoxX, nBoxY = simInfo.nBoxY,
+        nBoxX = 4, nBoxY = 3,
         gapX = 40, gapY = 30,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
