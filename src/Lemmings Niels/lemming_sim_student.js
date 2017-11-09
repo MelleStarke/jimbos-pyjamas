@@ -24,19 +24,22 @@ RobotInfo = [
    init: {x: 50, y: 50, angle: 0},  // initial position and orientation
    sensors: [  // define an array of sensors on the robot
      // define one sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
+     {sense: senseDistanceBlock,  // function handle, determines type of sensor
       minVal: 0,  // minimum detectable distance, in pixels
       maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
+      attachAngle: Math.PI/8,  // where the sensor is mounted on robot body
+      lookAngle: -Math.PI/8, // direction the sensor is looking (relative to center-out)
+      id: 'distBlock',
       color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
       parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
       value: null  // sensor value, i.e. distance in pixels; updated by sense() function
      },
      // define another sensor
-     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
-      lookAngle: 0, id: 'distL', color: [0, 150, 0], parent: null, value: null
+     {sense: senseDistanceWall, minVal: 0, maxVal: 50, attachAngle: Math.PI/8,
+      lookAngle: -Math.PI/8, id: 'distWall', color: [0, 150, 0], parent: null, value: null
+     },
+     {sense: senseColor, minVal: 0, maxVal: 25, attachAngle: 0,
+    	 lookAngle: Math.PI/(4/3), id: 'color', color: [0, 0, 150], parent: null, value: null
      }
    ]
   }
@@ -49,14 +52,14 @@ simInfo = {
   boxFric: 0.005, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
-  robotSize: 13,  // approximate robot radius, in pixels (note the SVG gets scaled down)
+  robotSize: 20,  // approximate robot radius, in pixels (note the SVG gets scaled down)
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
   bayRobot: null,  // currently selected robot
   baySensor: null,  // currently selected sensor
   bayScale: 3,  // scale within 2nd, inset canvas showing robot in it's "bay"
   doContinue: true,  // whether to continue simulation, set in HTML
-  debugSensors: false,  // plot sensor rays and mark detected objects
+  debugSensors: true,  // plot sensor rays and mark detected objects
   debugMouse: false,  // allow dragging any object with the mouse
   engine: null,  // MatterJS 2D physics engine
   world: null,  // world object (composite of all objects in MatterJS engine)
@@ -152,8 +155,7 @@ function convrgb(values) {
 
 
 function rotate(robot, torque=0) {
-  /* Apply a torque to the robot to rotate it.
-   *
+   /*
    * Parameters
    *   torque - rotational force to apply to the body.
    *            Try values around +/- 0.005.
@@ -175,7 +177,7 @@ function drive(robot, force=0) {
 };
 
 
-function senseDistance() {
+function senseDistanceBlock() {
   /* Distance sensor simulation based on ray casting. Called from sensor
    * object, returns nothing, updates a new reading into this.value.
    *
@@ -220,19 +222,22 @@ function senseDistance() {
     var collidedBodies = [];
     for (var bb = 0; bb < bodies.length; bb++) {
       var body = bodies[bb];
-      // coarse check on body boundaries, to increase performance:
-      if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
-        for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
-          var part = body.parts[pp];
-          // finer, more costly check on actual geometry:
-          if (Matter.Bounds.overlaps(part.bounds, rayRect.bounds)) {
-            const collision = Matter.SAT.collides(part, rayRect);
-            if (collision.collided) {
-              collidedBodies.push(body);
-              break;
-            }
-          }
-        }
+      // only blocks:
+      if (body.role === 'box') {
+      	// coarse check on body boundaries, to increase performance:
+      	if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
+      		for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
+      			var part = body.parts[pp];
+      			// finer, more costly check on actual geometry:
+      			if (Matter.Bounds.overlaps(part.bounds, rayRect.bounds)) {
+      				const collision = Matter.SAT.collides(part, rayRect);
+      				if (collision.collided) {
+      					collidedBodies.push(body);
+      					break;
+      				}
+      			}
+      		}
+      	}
       }
     }
     return collidedBodies;
@@ -297,6 +302,261 @@ function senseDistance() {
   }
 
   this.value = rayLength;
+};
+
+function senseDistanceWall() {
+  /* Distance sensor simulation based on ray casting. Called from sensor
+   * object, returns nothing, updates a new reading into this.value.
+   *
+   * Idea: Cast a ray with a certain length from the sensor, and check
+   *       via collision detection if objects intersect with the ray.
+   *       To determine distance, run a Binary search on ray length.
+   * Note: Sensor ray needs to ignore robot (parts), or start outside of it.
+   *       The latter is easy with the current circular shape of the robots.
+   * Note: Order of tests are optimized by starting with max ray length, and
+   *       then only testing the maximal number of initially resulting objects.
+   * Note: The sensor's "ray" could have any other (convex) shape;
+   *       currently it's just a very thin rectangle.
+   */
+
+  const context = document.getElementById('arenaLemming').getContext('2d');
+  var bodies = Matter.Composite.allBodies(simInfo.engine.world);
+
+  const robotAngle = this.parent.body.angle,
+        attachAngle = this.attachAngle,
+        rayAngle = robotAngle + attachAngle + this.lookAngle;
+
+  const rPos = this.parent.body.position,
+        rSize = simInfo.robotSize,
+        startPoint = {x: rPos.x + (rSize+1) * Math.cos(robotAngle + attachAngle),
+                      y: rPos.y + (rSize+1) * Math.sin(robotAngle + attachAngle)};
+
+  function getEndpoint(rayLength) {
+    return {x: rPos.x + (rSize + rayLength) * Math.cos(rayAngle),
+            y: rPos.y + (rSize + rayLength) * Math.sin(rayAngle)};
+  };
+
+  function sensorRay(bodies, rayLength) {
+    // Cast ray of supplied length and return the bodies that collide with it.
+    const rayWidth = 1e-100,
+          endPoint = getEndpoint(rayLength);
+    rayX = (endPoint.x + startPoint.x) / 2,
+    rayY = (endPoint.y + startPoint.y) / 2,
+    rayRect = Matter.Bodies.rectangle(rayX, rayY, rayLength, rayWidth,
+                                      {isSensor: true, isStatic: true,
+                                       angle: rayAngle, role: 'sensor'});
+
+    var collidedBodies = [];
+    for (var bb = 0; bb < bodies.length; bb++) {
+      var body = bodies[bb];
+      // only walls:
+      if (body.role === 'wall') {
+      	// coarse check on body boundaries, to increase performance:
+      	if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
+      		for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
+      			var part = body.parts[pp];
+      			// finer, more costly check on actual geometry:
+      			if (Matter.Bounds.overlaps(part.bounds, rayRect.bounds)) {
+      				const collision = Matter.SAT.collides(part, rayRect);
+      				if (collision.collided) {
+      					collidedBodies.push(body);
+      					break;
+      				}
+      			}
+      		}
+      	}
+      }
+    }
+    return collidedBodies;
+  };
+
+  // call 1x with full length, and check all bodies in the world;
+  // in subsequent calls, only check the bodies resulting here
+  var rayLength = this.maxVal;
+  bodies = sensorRay(bodies, rayLength);
+  // if some collided, search for maximal ray length without collisions
+  if (bodies.length > 0) {
+    var lo = 0,
+        hi = rayLength;
+    while (lo < rayLength) {
+      if (sensorRay(bodies, rayLength).length > 0) {
+        hi = rayLength;
+      }
+      else {
+        lo = rayLength;
+      }
+      rayLength = Math.floor(lo + (hi-lo)/2);
+    }
+  }
+  // increase length to (barely) touch closest body (if any)
+  rayLength += 1;
+  bodies = sensorRay(bodies, rayLength);
+
+  if (simInfo.debugSensors) {  // if invisible, check order of object drawing
+    // draw the resulting ray
+    endPoint = getEndpoint(rayLength);
+    context.beginPath();
+    context.moveTo(startPoint.x, startPoint.y);
+    context.lineTo(endPoint.x, endPoint.y);
+    context.strokeStyle = this.parent.info.color;
+    context.lineWidth = 0.5;
+    context.stroke();
+    // mark all objects's lines intersecting with the ray
+    for (var bb = 0; bb < bodies.length; bb++) {
+      var vertices = bodies[bb].vertices;
+      context.moveTo(vertices[0].x, vertices[0].y);
+      for (var vv = 1; vv < vertices.length; vv += 1) {
+        context.lineTo(vertices[vv].x, vertices[vv].y);
+      }
+      context.closePath();
+    }
+    context.stroke();
+  }
+
+  // indicate if the sensor exceeded its maximum length by returning infinity
+  if (rayLength > this.maxVal) {
+    rayLength = Infinity;
+  }
+  else {
+    // apply mild noise on the sensor reading, and clamp between valid values
+    function gaussNoise(sigma=1) {
+      const x0 = 1.0 - Math.random();
+      const x1 = 1.0 - Math.random();
+      return sigma * Math.sqrt(-2 * Math.log(x0)) * Math.cos(2 * Math.PI * x1);
+    };
+    rayLength = Math.floor(rayLength + gaussNoise(3));
+    rayLength = Matter.Common.clamp(rayLength, this.minVal, this.maxVal);
+  }
+
+  this.value = rayLength;
+};
+
+function senseColor() {
+  /* Distance sensor simulation based on ray casting. Called from sensor
+   * object, returns nothing, updates a new reading into this.value.
+   *
+   * Idea: Cast a ray with a certain length from the sensor, and check
+   *       via collision detection if objects intersect with the ray.
+   *       To determine distance, run a Binary search on ray length.
+   * Note: Sensor ray needs to ignore robot (parts), or start outside of it.
+   *       The latter is easy with the current circular shape of the robots.
+   * Note: Order of tests are optimized by starting with max ray length, and
+   *       then only testing the maximal number of initially resulting objects.
+   * Note: The sensor's "ray" could have any other (convex) shape;
+   *       currently it's just a very thin rectangle.
+   */
+
+  const context = document.getElementById('arenaLemming').getContext('2d');
+  var bodies = Matter.Composite.allBodies(simInfo.engine.world);
+
+  const robotAngle = this.parent.body.angle,
+        attachAngle = this.attachAngle,
+        rayAngle = robotAngle + attachAngle + this.lookAngle;
+
+  const rPos = this.parent.body.position,
+        rSize = simInfo.robotSize,
+        startPoint = {x: rPos.x + (rSize+1) * Math.cos(robotAngle + attachAngle),
+                      y: rPos.y + (rSize+1) * Math.sin(robotAngle + attachAngle)};
+
+  function getEndpoint(rayLength) {
+    return {x: rPos.x + (rSize + rayLength) * Math.cos(rayAngle),
+            y: rPos.y + (rSize + rayLength) * Math.sin(rayAngle)};
+  };
+
+  function sensorRay(bodies, rayLength) {
+    // Cast ray of supplied length and return the bodies that collide with it.
+    const rayWidth = 1e-100,
+          endPoint = getEndpoint(rayLength);
+    rayX = (endPoint.x + startPoint.x) / 2,
+    rayY = (endPoint.y + startPoint.y) / 2,
+    rayRect = Matter.Bodies.rectangle(rayX, rayY, rayLength, rayWidth,
+                                      {isSensor: true, isStatic: true,
+                                       angle: rayAngle, role: 'sensor'});
+
+    var collidedBodies = [];
+    for (var bb = 0; bb < bodies.length; bb++) {
+      var body = bodies[bb];
+      // only blocks:
+      var wallColor = [150, 150, 150]
+      if (!body.color.every(function(element, index) { return element === wallColor[index];})) {
+      	// coarse check on body boundaries, to increase performance:
+      	if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
+      		for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
+      			var part = body.parts[pp];
+      			// finer, more costly check on actual geometry:
+      			if (Matter.Bounds.overlaps(part.bounds, rayRect.bounds)) {
+      				const collision = Matter.SAT.collides(part, rayRect);
+      				if (collision.collided) {
+      					collidedBodies.push(body);
+      					break;
+      				}
+      			}
+      		}
+      	}
+      }
+    }
+    return collidedBodies;
+  };
+
+  // call 1x with full length, and check all bodies in the world;
+  // in subsequent calls, only check the bodies resulting here
+  var rayLength = this.maxVal;
+  bodies = sensorRay(bodies, rayLength);
+  // if some collided, search for maximal ray length without collisions
+  if (bodies.length > 0) {
+    var lo = 0,
+        hi = rayLength;
+    while (lo < rayLength) {
+      if (sensorRay(bodies, rayLength).length > 0) {
+        hi = rayLength;
+      }
+      else {
+        lo = rayLength;
+      }
+      rayLength = Math.floor(lo + (hi-lo)/2);
+    }
+  }
+  // increase length to (barely) touch closest body (if any)
+  rayLength += 1;
+  bodies = sensorRay(bodies, rayLength);
+  
+  var colorValue = -2;
+  const robotColor = [255, 255, 255],
+  		redColor = [200, 0, 0],
+  		blueColor = [0, 0, 200];
+  for (var bb = 0; bb < bodies.length; bb++) {
+	  if (bodies[bb].role == 'box') {
+		  colorValue = bodies[bb].color;
+		  break;
+	  }	  
+  }
+
+  if (simInfo.debugSensors) {  // if invisible, check order of object drawing
+    // draw the resulting ray
+    endPoint = getEndpoint(rayLength);
+    context.beginPath();
+    context.moveTo(startPoint.x, startPoint.y);
+    context.lineTo(endPoint.x, endPoint.y);
+    context.strokeStyle = this.parent.info.color;
+    context.lineWidth = 0.5;
+    context.stroke();
+    // mark all objects's lines intersecting with the ray
+    for (var bb = 0; bb < bodies.length; bb++) {
+      var vertices = bodies[bb].vertices;
+      context.moveTo(vertices[0].x, vertices[0].y);
+      for (var vv = 1; vv < vertices.length; vv += 1) {
+        context.lineTo(vertices[vv].x, vertices[vv].y);
+      }
+      context.closePath();
+    }
+    context.stroke();
+  }
+
+  // indicate if the sensor exceeded its maximum length by returning infinity
+  if (colorValue == -2) {
+    colorValue = Infinity
+  }
+  this.value = colorValue;
 };
 
 function dragSensor(sensor, event) {
@@ -417,12 +677,36 @@ function getSensorValById(robot, id) {
 };
 
 function robotMove(robot) {
-  // TODO: Define Lemming program here.
-  const distL = getSensorValById(robot, 'distL'),
-        distR = getSensorValById(robot, 'distR');
-
-  robot.rotate(robot, +0.005);
-  robot.drive(robot, 0.0005);
+  const distBlock = getSensorValById(robot, 'distBlock'),
+        distWall = getSensorValById(robot, 'distWall'),
+        color = getSensorValById(robot, 'color');
+  
+  var 	seeWall = distWall != Infinity,
+  		seeBlock = distBlock != Infinity,
+  		haveBlueBlock = color[2] == 200,
+  		haveRedBlock = color[0] == 200;
+  
+  if (seeBlock) {
+	  if (haveBlueBlock) {
+		  robot.rotate(robot, +0.004);
+		  robot.drive(robot, 0.0005);
+	  } else if (haveRedBlock) {
+		  robot.rotate(robot, -0.2);
+	  } else {
+		  robot.drive(robot, 0.0005);
+	  }
+  } else if (seeWall) {
+	  if (haveBlueBlock) {
+		  robot.rotate(robot, -0.1);
+	  } else if (haveRedBlock) {
+		  robot.rotate(robot, +0.1);
+	  } else {
+		  robot.rotate(robot, +0.05);
+	  }
+  } else {
+	  robot.rotate(robot, +0.004);
+	  robot.drive(robot, 0.0005);
+  }
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
