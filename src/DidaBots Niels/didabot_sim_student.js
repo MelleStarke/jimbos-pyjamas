@@ -148,7 +148,7 @@ RobotInfo = [
 
 simInfo = {
   maxSteps: 20000,  // maximal number of simulation steps to run
-  airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
+  airDrag: 0.2,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, //
   boxMass: 0.1,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
@@ -166,7 +166,10 @@ simInfo = {
   runner: null,  // object for running MatterJS engine
   height: null,  // set in HTML file; height of arena (world canvas), in pixels
   width: null,  // set in HTML file; width of arena (world canvas), in pixels
-  curSteps: 0  // increased by simStep()
+  curSteps: 0,  // increased by simStep()
+  robotNr: 3,
+  nBoxX: 5,
+  nBoxY: 5
 };
 
 robots = new Array();
@@ -234,7 +237,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(5);  // requires defined simInfo.world
+  setRobotNumber(simInfo.robotNr);  // requires defined simInfo.world
   loadBay(robots[0]);
 
 };
