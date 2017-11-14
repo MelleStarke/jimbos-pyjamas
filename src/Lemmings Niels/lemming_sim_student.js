@@ -723,12 +723,7 @@ function robotMove(robot) {
 		  } else if (haveRedBlock) {
 			  robot.info.mode = 'turn right';
 		  } else {
-			  const rand = Math.round(Math.random());
-			  if (rand === 0 ) {
-				  robot.info.mode = 'turn left';
-			  } else {
-				  robot.info.mode = 'turn right';
-			  }
+			  robot.info.mode = 'turn right';
 		  }
 	  } else if (seeBlock) {
 		  if (haveBlueBlock) {
