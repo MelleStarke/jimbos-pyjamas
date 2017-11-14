@@ -28,7 +28,7 @@ RobotInfo = [
      // define one sensor
      {sense: senseDistanceBlock,  // function handle, determines type of sensor
       minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 30,  // maximum detectable distance, in pixels
+      maxVal: 25,  // maximum detectable distance, in pixels
       attachAngle: Math.PI/12,  // where the sensor is mounted on robot body
       lookAngle: -Math.PI/18, // direction the sensor is looking (relative to center-out)
       id: 'distBlock',
@@ -380,7 +380,7 @@ function senseDistanceWall() {
     for (var bb = 0; bb < bodies.length; bb++) {
       var body = bodies[bb];
       // only walls:
-      if (body.role === 'wall') {
+      if (body.role === 'wall' || body.role === 'robot') {
       	// coarse check on body boundaries, to increase performance:
       	if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
       		for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
