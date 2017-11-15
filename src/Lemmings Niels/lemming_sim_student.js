@@ -55,7 +55,7 @@ RobotInfo = [
 	     // define one sensor
 	     {sense: senseDistanceBlock,  // function handle, determines type of sensor
 	      minVal: 0,  // minimum detectable distance, in pixels
-	      maxVal: 30,  // maximum detectable distance, in pixels
+	      maxVal: 20,  // maximum detectable distance, in pixels
 	      attachAngle: Math.PI/12,  // where the sensor is mounted on robot body
 	      lookAngle: -Math.PI/18, // direction the sensor is looking (relative to center-out)
 	      id: 'distBlock',
@@ -64,7 +64,7 @@ RobotInfo = [
 	      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
 	     },
 	     // define another sensor
-	     {sense: senseDistanceWall, minVal: 0, maxVal: 52, attachAngle: Math.PI/12,
+	     {sense: senseDistanceWall, minVal: 0, maxVal: 55, attachAngle: Math.PI/12,
 	      lookAngle: -Math.PI/18, id: 'distWall', color: [0, 150, 0], parent: null, value: null
 	     },
 	     {sense: senseColor, minVal: 0, maxVal: 25, attachAngle: 0,
@@ -77,19 +77,19 @@ RobotInfo = [
 
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
-  maxSteps: 50000,  // maximal number of simulation steps to run
+  maxSteps: 5000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
-  robotSize: 25,  // approximate robot radius, in pixels (note the SVG gets scaled down)
+  robotSize: 24,  // approximate robot radius, in pixels (note the SVG gets scaled down)
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
   bayRobot: null,  // currently selected robot
   baySensor: null,  // currently selected sensor
   bayScale: 3,  // scale within 2nd, inset canvas showing robot in it's "bay"
   doContinue: true,  // whether to continue simulation, set in HTML
-  debugSensors: true,  // plot sensor rays and mark detected objects
+  debugSensors: false,  // plot sensor rays and mark detected objects
   debugMouse: false,  // allow dragging any object with the mouse
   engine: null,  // MatterJS 2D physics engine
   world: null,  // world object (composite of all objects in MatterJS engine)
@@ -553,10 +553,12 @@ function senseColor() {
   rayLength += 1;
   bodies = sensorRay(bodies, rayLength);
   
-  var colorValue = -2;
+  var colorValue = [1, 2, 3];
   for (var bb = 0; bb < bodies.length; bb++) {
 	  if (bodies[bb].role == 'box') {
-		  colorValue = bodies[bb].color;
+		  for (c = 0; c < colorValue.length; c++) {
+			  colorValue[c] = bodies[bb].color[c];  
+		  }
 		  break;
 	  }	  
   }
@@ -583,8 +585,8 @@ function senseColor() {
   }
 
   // indicate if the sensor exceeded its maximum length by returning infinity
-  if (colorValue == -2) {
-    colorValue = Infinity
+  if (colorValue[0] == 1) {
+    colorValue = Infinity;
   } else {
 	  function gaussNoise(sigma=1) {
 	      const x0 = 1.0 - Math.random();
@@ -593,7 +595,7 @@ function senseColor() {
 	  };
 	  for (var c = 0; c < colorValue.length; c++) {
 		  colorValue[c] = colorValue[c] + gaussNoise(6);
-		  colorValue[c] = Math.round(colorValue[c], 2)
+		  colorValue[c] = Math.round(colorValue[c], 2);
 	  }	  
   }
   this.value = colorValue;
@@ -756,7 +758,6 @@ function robotMove(robot) {
   } else if (robot.info.mode === 'wander fast') {
 	  wanderFast(robot);
   } else if (robot.info.mode === 'turn left') {
-	  window.alert(color);
 	  turnLeft(robot, simInfo.curSteps, robot.info.modeSteps);
   } else if (robot.info.mode === 'turn right') {
 	  turnRight(robot, simInfo.curSteps, robot.info.modeSteps);
