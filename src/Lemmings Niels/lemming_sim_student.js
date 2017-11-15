@@ -28,7 +28,7 @@ RobotInfo = [
      // define one sensor
      {sense: senseDistanceBlock,  // function handle, determines type of sensor
       minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 25,  // maximum detectable distance, in pixels
+      maxVal: 20,  // maximum detectable distance, in pixels
       attachAngle: Math.PI/12,  // where the sensor is mounted on robot body
       lookAngle: -Math.PI/18, // direction the sensor is looking (relative to center-out)
       id: 'distBlock',
@@ -128,12 +128,15 @@ function init() {  // called once when loading HTML file
         wall_le = getWall(5, height/2, 5, height-15),
         wall_ri = getWall(width-5, height/2, 5, height-15);
   Matter.World.add(simInfo.world, [wall_lo, wall_hi, wall_le, wall_ri]);
+  
+  var boxIndex = 0;
 
   /* Add a bunch of boxes in a neat grid. */
   function getBox(x, y) {
+	boxIndex++;
     // flip coin for red vs blue and add rgb
-    colFlag = Math.round(Math.random());  // random 0,1 variable for box color
-    if (colFlag === 0){
+    colFlag = boxIndex % 2;
+    if (colFlag == 0){
       color = [0, 0, 200];
     }
     else {
@@ -148,9 +151,9 @@ function init() {  // called once when loading HTML file
     return box;
   };
 
-  const startX = 100, startY = 100,
-        nBoxX = 5, nBoxY = 5,
-        gapX = 40, gapY = 30,
+  const startX = 50, startY = 80,
+        nBoxX = 7, nBoxY = 7,
+        gapX = 35, gapY = 25,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
                                         gapX, gapY, getBox);
@@ -175,7 +178,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(2);
+  setRobotNumber(1);
   loadBay(robots[0]);
 };
 
@@ -727,7 +730,7 @@ function robotMove(robot) {
 		  }
 	  } else if (seeBlock) {
 		  if (haveBlueBlock) {
-			  robot.info.mode = 'wander fast';
+			  robot.info.mode = 'wander';
 		  } else if (haveRedBlock) {
 			  robot.info.mode = 'turn left';
 		  } else {
@@ -755,29 +758,29 @@ function robotMove(robot) {
 
 function wander(robot) {
 	robot.drive(robot, 0.0002);
-	robot.rotate(robot, +0.001);
+	robot.rotate(robot, +0.0004);
 	
 	robot.info.mode = 'no mode';
 }
 
 function wanderFast(robot) {
 	robot.drive(robot, 0.0005);
-	robot.rotate(robot, +0.02);
+	robot.rotate(robot, +0.03);
 	
 	robot.info.mode = 'no mode';
 }
 
 function turnLeft(robot, currentSteps, modeSteps) {
-	if (currentSteps < (modeSteps + 27 + RobotInfo.length * 2)) {
-		robot.rotate(robot, -0.015);
+	if (currentSteps < (modeSteps + 25 + RobotInfo.length * 2)) {
+		robot.rotate(robot, -0.008);
 	} else {
 		robot.info.mode = 'no mode';
 	}
 }
 
 function turnRight(robot, currentSteps, modeSteps) {
-	if (currentSteps < (modeSteps + 27 + RobotInfo.length * 2)) {
-		robot.rotate(robot, +0.015);
+	if (currentSteps < (modeSteps + 25 + RobotInfo.length * 2)) {
+		robot.rotate(robot, +0.008);
 	} else {
 		robot.info.mode = 'no mode';
 	}
