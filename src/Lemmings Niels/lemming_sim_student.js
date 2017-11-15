@@ -48,7 +48,7 @@ RobotInfo = [
   },
   {body: null,  // for MatterJS body, added by InstantiateRobot()
 	   color: [255, 255, 255],  // color of the robot shape
-	   init: {x: 50, y: 350, angle: 0},  // initial position and orientation
+	   init: {x: 50, y: 400, angle: 0},  // initial position and orientation
 	   mode: 'no mode',
 	   modeSteps: 0,
 	   sensors: [  // define an array of sensors on the robot
@@ -80,7 +80,7 @@ simInfo = {
   maxSteps: 50000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // friction between boxes during collisions
-  boxMass: 0.1,  // mass of boxes
+  boxMass: 0.01,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
   robotSize: 25,  // approximate robot radius, in pixels (note the SVG gets scaled down)
   robotMass: 0.4, // robot mass (a.u)
@@ -151,9 +151,9 @@ function init() {  // called once when loading HTML file
     return box;
   };
 
-  const startX = 50, startY = 80,
+  const startX = 100, startY = 100,
         nBoxX = 7, nBoxY = 7,
-        gapX = 35, gapY = 25,
+        gapX = 20, gapY = 20,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
                                         gapX, gapY, getBox);
@@ -178,7 +178,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(1);
+  setRobotNumber(2);
   loadBay(robots[0]);
 };
 
@@ -554,9 +554,6 @@ function senseColor() {
   bodies = sensorRay(bodies, rayLength);
   
   var colorValue = -2;
-  const robotColor = [255, 255, 255],
-  		redColor = [200, 0, 0],
-  		blueColor = [0, 0, 200];
   for (var bb = 0; bb < bodies.length; bb++) {
 	  if (bodies[bb].role == 'box') {
 		  colorValue = bodies[bb].color;
@@ -588,6 +585,16 @@ function senseColor() {
   // indicate if the sensor exceeded its maximum length by returning infinity
   if (colorValue == -2) {
     colorValue = Infinity
+  } else {
+	  function gaussNoise(sigma=1) {
+	      const x0 = 1.0 - Math.random();
+	      const x1 = 1.0 - Math.random();
+	      return sigma * Math.sqrt(-2 * Math.log(x0)) * Math.cos(2 * Math.PI * x1);
+	  };
+	  for (var c = 0; c < colorValue.length; c++) {
+		  colorValue[c] = colorValue[c] + gaussNoise(6);
+		  colorValue[c] = Math.round(colorValue[c], 2)
+	  }	  
   }
   this.value = colorValue;
 };
@@ -716,8 +723,9 @@ function robotMove(robot) {
   
   const	seeWall = distWall != Infinity,
   		seeBlock = distBlock != Infinity,
-  		haveBlueBlock = color[2] == 200,
-  		haveRedBlock = color[0] == 200;
+  		haveBlueBlock = color[2] > color[0],
+  		haveRedBlock = color[0] > color[2];
+  
   
   if (robot.info.mode === 'no mode') {
 	  if (seeWall) {
@@ -748,6 +756,7 @@ function robotMove(robot) {
   } else if (robot.info.mode === 'wander fast') {
 	  wanderFast(robot);
   } else if (robot.info.mode === 'turn left') {
+	  window.alert(color);
 	  turnLeft(robot, simInfo.curSteps, robot.info.modeSteps);
   } else if (robot.info.mode === 'turn right') {
 	  turnRight(robot, simInfo.curSteps, robot.info.modeSteps);
