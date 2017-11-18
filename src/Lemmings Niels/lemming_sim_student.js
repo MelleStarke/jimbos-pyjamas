@@ -51,7 +51,7 @@ RobotInfo = [
   },
   {body: null,  // for MatterJS body, added by InstantiateRobot()
 	   color: [255, 255, 255],  // color of the robot shape
-	   init: {x: 50, y: 350, angle: 0},  // initial position and orientation
+	   init: {x: 50, y: 400, angle: 0},  // initial position and orientation
 	   mode: 'no mode',
 	   modeSteps: 0,
 	   sensors: [  // define an array of sensors on the robot
@@ -78,12 +78,42 @@ RobotInfo = [
 	     },
 	     
 	   ]
-	  }
+	  },
+	  {body: null,  // for MatterJS body, added by InstantiateRobot()
+		   color: [255, 255, 255],  // color of the robot shape
+		   init: {x: 420, y: 200, angle: Math.PI},  // initial position and orientation
+		   mode: 'no mode',
+		   modeSteps: 0,
+		   sensors: [  // define an array of sensors on the robot
+		     // define one sensor
+		     {sense: senseDistanceBlock,  // function handle, determines type of sensor
+		      minVal: 0,  // minimum detectable distance, in pixels
+		      maxVal: 15,  // maximum detectable distance, in pixels
+		      attachAngle: Math.PI/18,  // where the sensor is mounted on robot body
+		      lookAngle: -Math.PI/100, // direction the sensor is looking (relative to center-out)
+		      id: 'distBlock',
+		      color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
+		      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
+		      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
+		     },
+		     // define another sensor
+		     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+		      lookAngle: Math.PI/20, id: 'distWallRight', color: [0, 150, 0], parent: null, value: null
+		     },
+		     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+		      lookAngle: -Math.PI/15, id: 'distWallLeft', color: [0, 150, 0], parent: null, value: null
+		     },
+		     {sense: senseColor, minVal: 0, maxVal: 6, attachAngle: Math.PI/2,
+		    	 lookAngle: Math.PI*1.28, id: 'color', color: [0, 0, 150], parent: null, value: null
+		     },
+		     
+		   ]
+		  }
 ];
 
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
-  maxSteps: 50000,  // maximal number of simulation steps to run
+  maxSteps: 100000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
   boxFric: 0, // friction between boxes during collisions
   boxMass: 0.1,  // mass of boxes
@@ -95,7 +125,7 @@ simInfo = {
   baySensor: null,  // currently selected sensor
   bayScale: 3,  // scale within 2nd, inset canvas showing robot in it's "bay"
   doContinue: true,  // whether to continue simulation, set in HTML
-  debugSensors: false,  // plot sensor rays and mark detected objects
+  debugSensors: true,  // plot sensor rays and mark detected objects
   debugMouse: true,  // allow dragging any object with the mouse
   engine: null,  // MatterJS 2D physics engine
   world: null,  // world object (composite of all objects in MatterJS engine)
@@ -783,7 +813,7 @@ function wander(robot, noiseForce, noiseTorque) {
 }
 
 function turnLeft(robot, currentSteps, modeSteps, noiseForce, noiseTorque) {
-	if (currentSteps < (modeSteps + 15 + RobotInfo.length * 2)) {
+	if (currentSteps < (modeSteps + 19)) {
 		robot.drive(robot, -0.0001 + noiseForce);
 		robot.rotate(robot, -0.001 + noiseTorque);
 	} else {
@@ -792,7 +822,7 @@ function turnLeft(robot, currentSteps, modeSteps, noiseForce, noiseTorque) {
 }
 
 function turnRight(robot, currentSteps, modeSteps, noiseForce, noiseTorque) {
-	if (currentSteps < (modeSteps + 15 + RobotInfo.length * 2)) {
+	if (currentSteps < (modeSteps + 19)) {
 		robot.drive(robot, 0.00006 + noiseForce);
 		robot.rotate(robot, +0.001 + noiseTorque);
 	} else {
