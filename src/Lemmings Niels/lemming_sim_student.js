@@ -22,37 +22,103 @@ RobotInfo = [
   {body: null,  // for MatterJS body, added by InstantiateRobot()
    color: [255, 255, 255],  // color of the robot shape
    init: {x: 50, y: 50, angle: 0},  // initial position and orientation
+   mode: 'no mode',
+   modeSteps: 0,
    sensors: [  // define an array of sensors on the robot
      // define one sensor
      {sense: senseDistanceBlock,  // function handle, determines type of sensor
       minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/8,  // where the sensor is mounted on robot body
-      lookAngle: -Math.PI/8, // direction the sensor is looking (relative to center-out)
+      maxVal: 15,  // maximum detectable distance, in pixels
+      attachAngle: Math.PI/18,  // where the sensor is mounted on robot body
+      lookAngle: -Math.PI/100, // direction the sensor is looking (relative to center-out)
       id: 'distBlock',
       color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
       parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
       value: null  // sensor value, i.e. distance in pixels; updated by sense() function
      },
      // define another sensor
-     {sense: senseDistanceWall, minVal: 0, maxVal: 50, attachAngle: Math.PI/8,
-      lookAngle: -Math.PI/8, id: 'distWall', color: [0, 150, 0], parent: null, value: null
+     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+      lookAngle: Math.PI/20, id: 'distWallRight', color: [0, 150, 0], parent: null, value: null
      },
-     {sense: senseColor, minVal: 0, maxVal: 25, attachAngle: 0,
-    	 lookAngle: Math.PI/(4/3), id: 'color', color: [0, 0, 150], parent: null, value: null
-     }
+     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+      lookAngle: -Math.PI/15, id: 'distWallLeft', color: [0, 150, 0], parent: null, value: null
+     },
+     {sense: senseColor, minVal: 0, maxVal: 6, attachAngle: Math.PI/2,
+    	 lookAngle: Math.PI*1.30, id: 'color', color: [0, 0, 150], parent: null, value: null
+     },
+     
    ]
-  }
+  },
+  {body: null,  // for MatterJS body, added by InstantiateRobot()
+	   color: [255, 255, 255],  // color of the robot shape
+	   init: {x: 50, y: 400, angle: 0},  // initial position and orientation
+	   mode: 'no mode',
+	   modeSteps: 0,
+	   sensors: [  // define an array of sensors on the robot
+	     // define one sensor
+	     {sense: senseDistanceBlock,  // function handle, determines type of sensor
+	      minVal: 0,  // minimum detectable distance, in pixels
+	      maxVal: 15,  // maximum detectable distance, in pixels
+	      attachAngle: Math.PI/18,  // where the sensor is mounted on robot body
+	      lookAngle: -Math.PI/100, // direction the sensor is looking (relative to center-out)
+	      id: 'distBlock',
+	      color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
+	      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
+	      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
+	     },
+	     // define another sensor
+	     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+	      lookAngle: Math.PI/20, id: 'distWallRight', color: [0, 150, 0], parent: null, value: null
+	     },
+	     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+	      lookAngle: -Math.PI/15, id: 'distWallLeft', color: [0, 150, 0], parent: null, value: null
+	     },
+	     {sense: senseColor, minVal: 0, maxVal: 6, attachAngle: Math.PI/2,
+	    	 lookAngle: Math.PI*1.28, id: 'color', color: [0, 0, 150], parent: null, value: null
+	     },
+	     
+	   ]
+	  },
+	  {body: null,  // for MatterJS body, added by InstantiateRobot()
+		   color: [255, 255, 255],  // color of the robot shape
+		   init: {x: 420, y: 200, angle: Math.PI},  // initial position and orientation
+		   mode: 'no mode',
+		   modeSteps: 0,
+		   sensors: [  // define an array of sensors on the robot
+		     // define one sensor
+		     {sense: senseDistanceBlock,  // function handle, determines type of sensor
+		      minVal: 0,  // minimum detectable distance, in pixels
+		      maxVal: 15,  // maximum detectable distance, in pixels
+		      attachAngle: Math.PI/18,  // where the sensor is mounted on robot body
+		      lookAngle: -Math.PI/100, // direction the sensor is looking (relative to center-out)
+		      id: 'distBlock',
+		      color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
+		      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
+		      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
+		     },
+		     // define another sensor
+		     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+		      lookAngle: Math.PI/20, id: 'distWallRight', color: [0, 150, 0], parent: null, value: null
+		     },
+		     {sense: senseDistanceWall, minVal: 0, maxVal: 40, attachAngle: Math.PI/30,
+		      lookAngle: -Math.PI/15, id: 'distWallLeft', color: [0, 150, 0], parent: null, value: null
+		     },
+		     {sense: senseColor, minVal: 0, maxVal: 6, attachAngle: Math.PI/2,
+		    	 lookAngle: Math.PI*1.28, id: 'color', color: [0, 0, 150], parent: null, value: null
+		     },
+		     
+		   ]
+		  }
 ];
 
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
-  maxSteps: 50000,  // maximal number of simulation steps to run
-  airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
-  boxFric: 0.005, // friction between boxes during collisions
-  boxMass: 0.01,  // mass of boxes
-  boxSize: 20,  // size of the boxes, in pixels
-  robotSize: 20,  // approximate robot radius, in pixels (note the SVG gets scaled down)
+  maxSteps: 100000,  // maximal number of simulation steps to run
+  airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
+  boxFric: 0, // friction between boxes during collisions
+  boxMass: 0.1,  // mass of boxes
+  boxSize: 10,  // size of the boxes, in pixels
+  robotSize: 18,  // approximate robot radius, in pixels (note the SVG gets scaled down)
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
   bayRobot: null,  // currently selected robot
@@ -60,7 +126,7 @@ simInfo = {
   bayScale: 3,  // scale within 2nd, inset canvas showing robot in it's "bay"
   doContinue: true,  // whether to continue simulation, set in HTML
   debugSensors: true,  // plot sensor rays and mark detected objects
-  debugMouse: false,  // allow dragging any object with the mouse
+  debugMouse: true,  // allow dragging any object with the mouse
   engine: null,  // MatterJS 2D physics engine
   world: null,  // world object (composite of all objects in MatterJS engine)
   runner: null,  // object for running MatterJS engine
@@ -98,12 +164,15 @@ function init() {  // called once when loading HTML file
         wall_le = getWall(5, height/2, 5, height-15),
         wall_ri = getWall(width-5, height/2, 5, height-15);
   Matter.World.add(simInfo.world, [wall_lo, wall_hi, wall_le, wall_ri]);
+  
+  var boxIndex = 0;
 
   /* Add a bunch of boxes in a neat grid. */
   function getBox(x, y) {
+	boxIndex++;
     // flip coin for red vs blue and add rgb
-    colFlag = Math.round(Math.random());  // random 0,1 variable for box color
-    if (colFlag == 1 ){
+    colFlag = boxIndex % 2;
+    if (colFlag == 0){
       color = [0, 0, 200];
     }
     else {
@@ -119,8 +188,8 @@ function init() {  // called once when loading HTML file
   };
 
   const startX = 100, startY = 100,
-        nBoxX = 5, nBoxY = 5,
-        gapX = 40, gapY = 30,
+        nBoxX = 7, nBoxY = 7,
+        gapX = 30, gapY = 30,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
                                         gapX, gapY, getBox);
@@ -350,7 +419,7 @@ function senseDistanceWall() {
     for (var bb = 0; bb < bodies.length; bb++) {
       var body = bodies[bb];
       // only walls:
-      if (body.role === 'wall') {
+      if (body.role === 'wall' || body.role === 'robot') {
       	// coarse check on body boundaries, to increase performance:
       	if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
       		for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
@@ -477,8 +546,7 @@ function senseColor() {
     for (var bb = 0; bb < bodies.length; bb++) {
       var body = bodies[bb];
       // only blocks:
-      var wallColor = [150, 150, 150]
-      if (!body.color.every(function(element, index) { return element === wallColor[index];})) {
+      if (body.role == 'box') {
       	// coarse check on body boundaries, to increase performance:
       	if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
       		for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
@@ -520,13 +588,12 @@ function senseColor() {
   rayLength += 1;
   bodies = sensorRay(bodies, rayLength);
   
-  var colorValue = -2;
-  const robotColor = [255, 255, 255],
-  		redColor = [200, 0, 0],
-  		blueColor = [0, 0, 200];
+  var colorValue = [1, 2, 3];
   for (var bb = 0; bb < bodies.length; bb++) {
 	  if (bodies[bb].role == 'box') {
-		  colorValue = bodies[bb].color;
+		  for (c = 0; c < colorValue.length; c++) {
+			  colorValue[c] = bodies[bb].color[c];  
+		  }
 		  break;
 	  }	  
   }
@@ -553,8 +620,18 @@ function senseColor() {
   }
 
   // indicate if the sensor exceeded its maximum length by returning infinity
-  if (colorValue == -2) {
-    colorValue = Infinity
+  if (colorValue[0] == 1) {
+    colorValue = Infinity;
+  } else {
+	  function gaussNoise(sigma=1) {
+	      const x0 = 1.0 - Math.random();
+	      const x1 = 1.0 - Math.random();
+	      return sigma * Math.sqrt(-2 * Math.log(x0)) * Math.cos(2 * Math.PI * x1);
+	  };
+	  for (var c = 0; c < colorValue.length; c++) {
+		  colorValue[c] = colorValue[c] + gaussNoise(6);
+		  colorValue[c] = Math.round(colorValue[c], 2);
+	  }	  
   }
   this.value = colorValue;
 };
@@ -678,36 +755,88 @@ function getSensorValById(robot, id) {
 
 function robotMove(robot) {
   const distBlock = getSensorValById(robot, 'distBlock'),
-        distWall = getSensorValById(robot, 'distWall'),
+        distWallLeft = getSensorValById(robot, 'distWallLeft'),
+        distWallRight = getSensorValById(robot, 'distWallRight');
         color = getSensorValById(robot, 'color');
   
-  var 	seeWall = distWall != Infinity,
+  const	seeWall = distWallLeft != Infinity || distWallRight != Infinity,
   		seeBlock = distBlock != Infinity,
-  		haveBlueBlock = color[2] == 200,
-  		haveRedBlock = color[0] == 200;
+  		haveBlueBlock = color[2] > color[0],
+  		haveRedBlock = color[0] > color[2];
   
-  if (seeBlock) {
-	  if (haveBlueBlock) {
-		  robot.rotate(robot, +0.004);
-		  robot.drive(robot, 0.0005);
-	  } else if (haveRedBlock) {
-		  robot.rotate(robot, -0.2);
+  
+  if (robot.info.mode === 'no mode') {
+	  if (seeWall) {
+		  if (haveBlueBlock) {
+			  robot.info.mode = 'turn left';
+		  } else if (haveRedBlock) {
+			  robot.info.mode = 'turn right';
+		  } else {
+			  robot.info.mode = 'turn right';
+		  }
+	  } else if (seeBlock) {
+		  if (haveBlueBlock) {
+			  robot.info.mode = 'wander';
+		  } else if (haveRedBlock) {
+			  robot.info.mode = 'turn left';
+		  } else {
+			  robot.info.mode = 'move forward';
+		  }
 	  } else {
-		  robot.drive(robot, 0.0005);
+		  robot.info.mode = 'wander';
 	  }
-  } else if (seeWall) {
-	  if (haveBlueBlock) {
-		  robot.rotate(robot, -0.1);
-	  } else if (haveRedBlock) {
-		  robot.rotate(robot, +0.1);
-	  } else {
-		  robot.rotate(robot, +0.05);
-	  }
-  } else {
-	  robot.rotate(robot, +0.004);
-	  robot.drive(robot, 0.0005);
+	  
+	  robot.info.modeSteps = simInfo.curSteps;
+  } 
+  
+  var noiseForce = (Math.random() * (0.00002 + 0.00002)) - 0.00002;
+  var noiseTorque = (Math.random() * (0.000008 + 0.000008)) - 0.000008;
+  
+  console.log(noiseForce, noiseTorque);
+  
+  if (robot.info.mode === 'wander') {
+	  wander(robot, noiseForce, noiseTorque);
+  } else if (robot.info.mode === 'turn left') {
+	  turnLeft(robot, simInfo.curSteps, robot.info.modeSteps, noiseForce, noiseTorque);
+  } else if (robot.info.mode === 'turn right') {
+	  turnRight(robot, simInfo.curSteps, robot.info.modeSteps, noiseForce, noiseTorque);
+  } else if (robot.info.mode === 'move forward') {
+	  moveForward(robot, simInfo.curSteps, robot.info.modeSteps, noiseForce);
   }
 };
+
+function wander(robot, noiseForce, noiseTorque) {
+	robot.drive(robot, 0.0002 + noiseForce);
+	robot.rotate(robot, +0.00003 + noiseTorque);
+	
+	robot.info.mode = 'no mode';
+}
+
+function turnLeft(robot, currentSteps, modeSteps, noiseForce, noiseTorque) {
+	if (currentSteps < (modeSteps + 19)) {
+		robot.drive(robot, -0.0001 + noiseForce);
+		robot.rotate(robot, -0.001 + noiseTorque);
+	} else {
+		robot.info.mode = 'no mode';
+	}
+}
+
+function turnRight(robot, currentSteps, modeSteps, noiseForce, noiseTorque) {
+	if (currentSteps < (modeSteps + 19)) {
+		robot.drive(robot, 0.00006 + noiseForce);
+		robot.rotate(robot, +0.001 + noiseTorque);
+	} else {
+		robot.info.mode = 'no mode';
+	}
+}
+
+function moveForward(robot, currentSteps, modeSteps, noiseForce) {
+	if (currentSteps < (modeSteps + 10 + RobotInfo.length * 2)) {
+		robot.drive(robot, 0.0003 + noiseForce);
+	} else {
+		robot.info.mode = 'no mode';
+	}
+}
 
 function plotSensor(context, x = this.x, y = this.y) {
   context.beginPath();
