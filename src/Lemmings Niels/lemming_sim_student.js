@@ -116,7 +116,7 @@ simInfo = {
   maxSteps: 100000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
   boxFric: 0, // friction between boxes during collisions
-  boxMass: 0.1,  // mass of boxes
+  boxMass: 0.05,  // mass of boxes
   boxSize: 10,  // size of the boxes, in pixels
   robotSize: 18,  // approximate robot radius, in pixels (note the SVG gets scaled down)
   robotMass: 0.4, // robot mass (a.u)
@@ -214,7 +214,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(1);
+  setRobotNumber(3);
   loadBay(robots[0]);
 };
 

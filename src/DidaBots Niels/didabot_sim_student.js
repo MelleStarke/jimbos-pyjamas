@@ -234,7 +234,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(5);  // requires defined simInfo.world
+  setRobotNumber(1);  // requires defined simInfo.world
   loadBay(robots[0]);
 
 };
