@@ -141,8 +141,8 @@ simInfo = {
   height: null,  // set in HTML file; height of arena (world canvas), in pixels
   width: null,  // set in HTML file; width of arena (world canvas), in pixels
   curSteps: 0,  // increased by simStep()
-  learningRate: 0.050, // Learning rate used for the weights.
-  forgettingRate: 0.00335 // Forgetting rate used for the weights.
+  learningRate: 0.025, // Learning rate used for the weights.
+  forgettingRate: 0.002 // Forgetting rate used for the weights.
 };
 
 robots = new Array();
@@ -591,16 +591,43 @@ function getSensorValById(robot, id) {
 
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	const turnThreshold = 0.5;
+	const turnThreshold = 0.5,
+		  nrTouchSensors = robot.sensors.length / 2.0,
+		  touchLSensorActivation = getSensorValById(robot, 'touchL'),
+		  touchRSensorActivation = getSensorValById(robot, 'touchR');
 	
-	//Sensor values
+
+	var distNodesActivation = getDistNodesActivation(robot);
+	
+	var touchLSummedInput = touchLSensorActivation 
+							+ robot.info.weights["ll"] * distNodesActivation["l"] 
+							+ robot.info.weights["rl"] * distNodesActivation["r"],
+		touchRSummedInput = touchRSensorActivation 
+							+ robot.info.weights["lr"] * distNodesActivation["l"] 
+							+ robot.info.weights["rr"] * distNodesActivation["r"];	
+	
+	var touchNodesActivation = {l: 0.0, r:0.0};
+	if (touchLSummedInput >= turnThreshold) {
+		touchNodesActivation["l"] = 1.0;
+	}
+	if (touchRSummedInput >= turnThreshold) {
+		touchNodesActivation["r"] = 1.0;
+	}	
+	
+	learnWeights(robot, distNodesActivation, touchNodesActivation, nrTouchSensors);	
+	
+	
+	var torque = ((touchLSummedInput - touchRSummedInput) / 100.0) + 0.001;
+	
+	//Move:
+	rotate(robot, torque);
+	drive(robot, 0.0005);
+};
+
+function getDistNodesActivation(robot) {
+	//Sensor Values
 	var distLSensorActivation = getSensorValById(robot, 'distL'),
-		distRSensorActivation = getSensorValById(robot, 'distR'),
-	    touchLSensorActivation = getSensorValById(robot, 'touchL'),
-	    touchRSensorActivation = getSensorValById(robot, 'touchR');
-	
-	var force = 0.0005,
-		torque = 0.001;
+		distRSensorActivation = getSensorValById(robot, 'distR');
 	
 	//Dealing with infinity values
 	if(distLSensorActivation == Infinity) {
@@ -609,42 +636,13 @@ function robotMove(robot) {
 	if(distRSensorActivation == Infinity) {
 		distRSensorActivation = 51.0;
 	}
-	
+
 	//Instead of having 'see less --> higher value', this is changed to 'see less --> lower value', between 0 and 1. 
 	var distNodesActivation = {l: 0.0, r: 0.0};	
 	distNodesActivation["l"] = (51.0 - distLSensorActivation) / 51.0;
 	distNodesActivation["r"] = (51.0 - distRSensorActivation) / 51.0;
 	
-	
-	var touchLSummedInput = touchLSensorActivation 
-							+ robot.info.weights["ll"] * distNodesActivation["l"] 
-							+ robot.info.weights["rl"] * distNodesActivation["r"],
-		touchRSummedInput = touchRSensorActivation 
-							+ robot.info.weights["lr"] * distNodesActivation["l"] 
-							+ robot.info.weights["rr"] * distNodesActivation["r"];
-	
-	
-	var touchNodesActivation = {l: 0.0, r:0.0};
-	if (touchLSummedInput >= turnThreshold) {
-		touchNodesActivation["l"] = 1.0;
-		torque += touchLSummedInput * 0.01;
-	}
-	if (touchRSummedInput >= turnThreshold) {
-		touchNodesActivation["r"] = 1.0;
-		torque -= touchRSummedInput * 0.01;
-	}	
-	
-	learnweights(robot, distNodesActivation, touchNodesActivation, 2.0);	
-	
-	//Only turn when at the wall
-	if (avgTouchNodeActivation == 1.0) {
-		force = 0.0;
-		torque += 0.05;
-	}
-	
-	//Move:
-//	rotate(robot, torque);
-//	drive(robot, force);
+	return distNodesActivation;
 };
 
 function learnWeights(robot, distNodesActivation, touchNodesActivation, nrTouchSensors) {
