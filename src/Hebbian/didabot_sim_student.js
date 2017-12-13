@@ -142,7 +142,7 @@ simInfo = {
   width: null,  // set in HTML file; width of arena (world canvas), in pixels
   curSteps: 0,  // increased by simStep()
   learningRate: 0.025, // Learning rate used for the weights.
-  forgettingRate: 0.002 // Forgetting rate used for the weights.
+  forgettingRate: 0.02 // Forgetting rate used for the weights.
 };
 
 robots = new Array();
@@ -591,7 +591,7 @@ function getSensorValById(robot, id) {
 
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	const turnThreshold = 0.5,
+	const turnThreshold = 1.0,
 		  nrTouchSensors = robot.sensors.length / 2.0,
 		  touchLSensorActivation = getSensorValById(robot, 'touchL'),
 		  touchRSensorActivation = getSensorValById(robot, 'touchR');
@@ -617,11 +617,19 @@ function robotMove(robot) {
 	learnWeights(robot, distNodesActivation, touchNodesActivation, nrTouchSensors);	
 	
 	
-	var torque = ((touchLSummedInput - touchRSummedInput) / 100.0) + 0.001;
+	var torque = ((touchLSummedInput - touchRSummedInput) / 100.0) + 0.001,
+		force = 0.0005;
+	
+	//Only turn when at wall
+	const avgTouchSensorActivation = (touchLSensorActivation + touchRSensorActivation) / nrTouchSensors;
+	if (avgTouchSensorActivation == 1.0) {
+		force = -0.0002;
+		torque = 0.1;
+	}
 	
 	//Move:
 	rotate(robot, torque);
-	drive(robot, 0.0005);
+	drive(robot, force);
 };
 
 function getDistNodesActivation(robot) {
