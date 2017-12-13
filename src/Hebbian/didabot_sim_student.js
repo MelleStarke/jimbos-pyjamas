@@ -141,7 +141,7 @@ simInfo = {
   height: null,  // set in HTML file; height of arena (world canvas), in pixels
   width: null,  // set in HTML file; width of arena (world canvas), in pixels
   curSteps: 0,  // increased by simStep()
-  learningRate: 0.2, // Learning rate used for the weights.
+  learningRate: 0.0, // Learning rate used for the weights.
   forgettingRate: 0.0067, // Forgetting rate used for the weights.
   weights: {ll: [], lr: [], rl: [], rr: []}
 };
@@ -559,7 +559,7 @@ function InstantiateRobot(robotInfo) {
   // instantiate weights
   this.weights = robotInfo.weights;
   for (key in this.weights) {
-	  this.weights[key] = 0;
+	  this.weights[key] = Math.random() / 10000.0;
   }
   
   // attach its helper functions
@@ -613,7 +613,7 @@ function robotMove(robot) {
 	}
 	if (touchRSummedInput >= turnThreshold) {
 		touchNodesActivation["r"] = 1.0;
-	}	
+	}
 	
 	learnWeights(robot, distNodesActivation, touchLSensorActivation, touchRSensorActivation, touchNodesActivation, nrTouchSensors);	
 	
