@@ -122,7 +122,7 @@ RobotInfo = [
 
 simInfo = {
   maxSteps: 20000,  // maximal number of simulation steps to run
-  airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
+  airDrag: 0.12,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // Does nothing ???
   boxMass: 0.1,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
@@ -141,8 +141,9 @@ simInfo = {
   height: null,  // set in HTML file; height of arena (world canvas), in pixels
   width: null,  // set in HTML file; width of arena (world canvas), in pixels
   curSteps: 0,  // increased by simStep()
-  learningRate: 0.025, // Learning rate used for the weights.
-  forgettingRate: 0.02 // Forgetting rate used for the weights.
+  learningRate: 0.2, // Learning rate used for the weights.
+  forgettingRate: 0.0067, // Forgetting rate used for the weights.
+  weights: {ll: [], lr: [], rl: [], rr: []}
 };
 
 robots = new Array();
@@ -210,7 +211,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(2);  // requires defined simInfo.world
+  setRobotNumber(1);  // requires defined simInfo.world
   loadBay(robots[0]);
 
 };
@@ -591,7 +592,7 @@ function getSensorValById(robot, id) {
 
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	const turnThreshold = 1.0,
+	const turnThreshold = 0.95,
 		  nrTouchSensors = robot.sensors.length / 2.0,
 		  touchLSensorActivation = getSensorValById(robot, 'touchL'),
 		  touchRSensorActivation = getSensorValById(robot, 'touchR');
@@ -614,17 +615,17 @@ function robotMove(robot) {
 		touchNodesActivation["r"] = 1.0;
 	}	
 	
-	learnWeights(robot, distNodesActivation, touchNodesActivation, nrTouchSensors);	
+	learnWeights(robot, distNodesActivation, touchLSensorActivation, touchRSensorActivation, touchNodesActivation, nrTouchSensors);	
 	
 	
-	var torque = ((touchLSummedInput - touchRSummedInput) / 100.0) + 0.001,
+	var torque = ((touchLSummedInput - touchRSummedInput) / 58.0) + 0.001,
 		force = 0.0005;
 	
 	//Only turn when at wall
 	const avgTouchSensorActivation = (touchLSensorActivation + touchRSensorActivation) / nrTouchSensors;
 	if (avgTouchSensorActivation == 1.0) {
 		force = -0.0002;
-		torque = 0.1;
+		torque = 0.06;
 	}
 	
 	//Move:
@@ -653,11 +654,15 @@ function getDistNodesActivation(robot) {
 	return distNodesActivation;
 };
 
-function learnWeights(robot, distNodesActivation, touchNodesActivation, nrTouchSensors) {
+function learnWeights(robot, distNodesActivation, touchLSensorActivation, touchRSensorActivation, touchNodesActivation, nrTouchSensors) {
 	//Learning:
 	var learning = {ll: 0.0, lr: 0.0, rl: 0.0, rr: 0.0};
 	for (key in learning) {
-		learning[key] = simInfo.learningRate * distNodesActivation[key.charAt(0)] * touchNodesActivation[key.charAt(1)];
+		if (key.charAt(1) == "l") {
+			learning[key] = simInfo.learningRate * distNodesActivation[key.charAt(0)] * touchLSensorActivation;
+		} else {
+			learning[key] = simInfo.learningRate * distNodesActivation[key.charAt(0)] * touchRSensorActivation;
+		}
 	}
 	
 	//Forgetting:
@@ -784,7 +789,19 @@ function simStep() {
   if (simInfo.curSteps < simInfo.maxSteps) {
     repaintBay();
     drawBoard();
-    console.log(robots[0].info.weights);
+    if (simInfo.curSteps % 1000 == 0) {
+    	for (key in simInfo.weights) {
+    		simInfo.weights[key].push(robots[0].info.weights[key]);
+    	}
+    }
+    
+    if (simInfo.curSteps != 0 && simInfo.curSteps % 19999 == 0) {
+    	console.log("ll: " + simInfo.weights["ll"]);
+    	console.log("lr: " + simInfo.weights["lr"]);
+    	console.log("rl: " + simInfo.weights["rl"]);
+    	console.log("rr: " + simInfo.weights["rr"]);
+    }
+    
     for (var rr = 0; rr < robots.length; ++rr) {
       robotUpdateSensors(robots[rr]);
       robotMove(robots[rr]);
