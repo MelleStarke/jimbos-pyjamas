@@ -68,56 +68,105 @@ RobotInfo = [
        parent: null,
        value: null}
    ]
-  },
+  }, // Robot 2:
   {
-	   body: null,  // for MatterJS body, added by InstantiateRobot()
-	   weights: {ll: null, lr: null, rl: null, rr: null}, //Weights for our neural net
-	   color: "magenta",  // color of the robot marker
-	   init: {x: 50, y: 400, angle: 0},  // initial position and orientation
-	   sensors: [  // define an array of sensors on the robot
-	     // define right sensor
-	     {sense: senseDistance,  // function handle, determines type of sensor
-	      minVal: 0,  // minimum detectable distance, in pixels
-	      maxVal: 50,  // maximum detectable distance, in pixels
-	      attachAngle: Math.PI/4 - 0.2,  // where the sensor is mounted on robot body
-	      lookAngle: Math.PI/12,  // direction the sensor is looking (relative to
-							// center-out)
-	      id: 'distR',  // a unique, arbitrary ID of the sensor, for
-						// printing/debugging
-	      parent: null,  // robot object the sensor is attached to, added by
-							// InstantiateRobot
-	      value: null  // sensor value, i.e. distance in pixels; updated by sense()
-						// function
-	     },
-	     // define left sensor
-	     {sense: senseDistance,
-	      minVal: 0,
-	      maxVal: 50,
-	      attachAngle: -Math.PI/4 + 0.2,
-	      lookAngle: -Math.PI/12,
-	      id: 'distL',
-	      parent: null,
-	      value: null},
-	      //Left touch sensor
-	      {sense: senseTouch,
-	       minVal: 0,
-	       maxVal: 6,
-	       attachAngle: -Math.PI/4 - 0.1,
-	       lookAngle: Math.PI/12,
-	       id: 'touchL',
-	       parent: null,
-	       value: null},
-	      //Right touch sensor
-	      {sense: senseTouch,
-	       minVal: 0,
-	       maxVal: 6,
-	       attachAngle: Math.PI/4 + 0.1,
-	       lookAngle: -Math.PI/12,
-	       id: 'touchR',
-	       parent: null,
-	       value: null}
-	   ]
-	  }
+   body: null,  // for MatterJS body, added by InstantiateRobot()
+   weights: {ll: null, lr: null, rl: null, rr: null}, //Weights for our neural net
+   color: "red",  // color of the robot marker
+   init: {x: 150, y: 50, angle: 0},  // initial position and orientation
+   sensors: [  // define an array of sensors on the robot
+     // define right sensor
+     {sense: senseDistance,  // function handle, determines type of sensor
+      minVal: 0,  // minimum detectable distance, in pixels
+      maxVal: 50,  // maximum detectable distance, in pixels
+      attachAngle: Math.PI/4 - 0.2,  // where the sensor is mounted on robot body
+      lookAngle: Math.PI/12,  // direction the sensor is looking (relative to
+						// center-out)
+      id: 'distR',  // a unique, arbitrary ID of the sensor, for
+					// printing/debugging
+      parent: null,  // robot object the sensor is attached to, added by
+						// InstantiateRobot
+      value: null  // sensor value, i.e. distance in pixels; updated by sense()
+					// function
+     },
+     // define left sensor
+     {sense: senseDistance,
+      minVal: 0,
+      maxVal: 50,
+      attachAngle: -Math.PI/4 + 0.2,
+      lookAngle: -Math.PI/12,
+      id: 'distL',
+      parent: null,
+      value: null},
+      //Left touch sensor
+      {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: -Math.PI/4 - 0.1,
+       lookAngle: Math.PI/12,
+       id: 'touchL',
+       parent: null,
+       value: null},
+      //Right touch sensor
+       {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: Math.PI/4 + 0.1,
+       lookAngle: -Math.PI/12,
+       id: 'touchR',
+       parent: null,
+       value: null}
+   ]
+  }, // Robot 3:
+  {
+   body: null,  // for MatterJS body, added by InstantiateRobot()
+   weights: {ll: null, lr: null, rl: null, rr: null}, //Weights for our neural net
+   color: "red",  // color of the robot marker
+   init: {x: 50, y: 150, angle: 0},  // initial position and orientation
+   sensors: [  // define an array of sensors on the robot
+     // define right sensor
+     {sense: senseDistance,  // function handle, determines type of sensor
+      minVal: 0,  // minimum detectable distance, in pixels
+      maxVal: 50,  // maximum detectable distance, in pixels
+      attachAngle: Math.PI/4 - 0.2,  // where the sensor is mounted on robot body
+      lookAngle: Math.PI/12,  // direction the sensor is looking (relative to
+						// center-out)
+      id: 'distR',  // a unique, arbitrary ID of the sensor, for
+					// printing/debugging
+      parent: null,  // robot object the sensor is attached to, added by
+						// InstantiateRobot
+      value: null  // sensor value, i.e. distance in pixels; updated by sense()
+					// function
+     },
+     // define left sensor
+     {sense: senseDistance,
+      minVal: 0,
+      maxVal: 50,
+      attachAngle: -Math.PI/4 + 0.2,
+      lookAngle: -Math.PI/12,
+      id: 'distL',
+      parent: null,
+      value: null},
+      //Left touch sensor
+      {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: -Math.PI/4 - 0.1,
+       lookAngle: Math.PI/12,
+       id: 'touchL',
+       parent: null,
+       value: null},
+      //Right touch sensor
+       {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: Math.PI/4 + 0.1,
+       lookAngle: -Math.PI/12,
+       id: 'touchR',
+       parent: null,
+       value: null}
+   ]
+  }
 ];
 
 simInfo = {
@@ -141,9 +190,9 @@ simInfo = {
   height: null,  // set in HTML file; height of arena (world canvas), in pixels
   width: null,  // set in HTML file; width of arena (world canvas), in pixels
   curSteps: 0,  // increased by simStep()
-  learningRate: 0.0, // Learning rate used for the weights.
+  learningRate: 0.2, // Learning rate used for the weights.
   forgettingRate: 0.0067, // Forgetting rate used for the weights.
-  weights: {ll: [], lr: [], rl: [], rr: []}
+  weights: {ll: [[],[],[]], lr: [[],[],[]], rl: [[],[],[]], rr: [[],[],[]]}
 };
 
 robots = new Array();
@@ -791,15 +840,21 @@ function simStep() {
     drawBoard();
     if (simInfo.curSteps % 1000 == 0) {
     	for (key in simInfo.weights) {
-    		simInfo.weights[key].push(robots[0].info.weights[key]);
+    		for (var s = 0; s < robots.length; s++) {
+    			simInfo.weights[key][s].push(robots[s].info.weights[key]);
+    		}
     	}
     }
     
     if (simInfo.curSteps != 0 && simInfo.curSteps % 19999 == 0) {
-    	console.log("ll: " + simInfo.weights["ll"]);
-    	console.log("lr: " + simInfo.weights["lr"]);
-    	console.log("rl: " + simInfo.weights["rl"]);
-    	console.log("rr: " + simInfo.weights["rr"]);
+    	for (var s = 0; s < robots.length; s++) {    	
+    		console.log("Robot " + (s + 1) + ": ");
+    		
+	    	console.log("ll: " + simInfo.weights["ll"][s]);
+	    	console.log("lr: " + simInfo.weights["lr"][s]);
+	    	console.log("rl: " + simInfo.weights["rl"][s]);
+	    	console.log("rr: " + simInfo.weights["rr"][s]);
+    	}	
     }
     
     for (var rr = 0; rr < robots.length; ++rr) {
