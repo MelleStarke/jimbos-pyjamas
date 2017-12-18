@@ -1,3 +1,4 @@
+
 /* Didabots - robot and GUI script.
  *
  * Copyright 2016 Harmen de Weerd
@@ -166,6 +167,104 @@ RobotInfo = [
        parent: null,
        value: null}
    ]
+  }, // Robot 4:
+  {
+   body: null,  // for MatterJS body, added by InstantiateRobot()
+   weights: {ll: null, lr: null, rl: null, rr: null}, //Weights for our neural net
+   color: "red",  // color of the robot marker
+   init: {x: 100, y: 150, angle: 0},  // initial position and orientation
+   sensors: [  // define an array of sensors on the robot
+     // define right sensor
+     {sense: senseDistance,  // function handle, determines type of sensor
+      minVal: 0,  // minimum detectable distance, in pixels
+      maxVal: 50,  // maximum detectable distance, in pixels
+      attachAngle: Math.PI/4 - 0.2,  // where the sensor is mounted on robot body
+      lookAngle: Math.PI/12,  // direction the sensor is looking (relative to
+						// center-out)
+      id: 'distR',  // a unique, arbitrary ID of the sensor, for
+					// printing/debugging
+      parent: null,  // robot object the sensor is attached to, added by
+						// InstantiateRobot
+      value: null  // sensor value, i.e. distance in pixels; updated by sense()
+					// function
+     },
+     // define left sensor
+     {sense: senseDistance,
+      minVal: 0,
+      maxVal: 50,
+      attachAngle: -Math.PI/4 + 0.2,
+      lookAngle: -Math.PI/12,
+      id: 'distL',
+      parent: null,
+      value: null},
+      //Left touch sensor
+      {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: -Math.PI/4 - 0.1,
+       lookAngle: Math.PI/12,
+       id: 'touchL',
+       parent: null,
+       value: null},
+      //Right touch sensor
+       {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: Math.PI/4 + 0.1,
+       lookAngle: -Math.PI/12,
+       id: 'touchR',
+       parent: null,
+       value: null}
+   ]
+  },// Robot 5:
+  {
+   body: null,  // for MatterJS body, added by InstantiateRobot()
+   weights: {ll: null, lr: null, rl: null, rr: null}, //Weights for our neural net
+   color: "red",  // color of the robot marker
+   init: {x: 50, y: 100, angle: 0},  // initial position and orientation
+   sensors: [  // define an array of sensors on the robot
+     // define right sensor
+     {sense: senseDistance,  // function handle, determines type of sensor
+      minVal: 0,  // minimum detectable distance, in pixels
+      maxVal: 50,  // maximum detectable distance, in pixels
+      attachAngle: Math.PI/4 - 0.2,  // where the sensor is mounted on robot body
+      lookAngle: Math.PI/12,  // direction the sensor is looking (relative to
+						// center-out)
+      id: 'distR',  // a unique, arbitrary ID of the sensor, for
+					// printing/debugging
+      parent: null,  // robot object the sensor is attached to, added by
+						// InstantiateRobot
+      value: null  // sensor value, i.e. distance in pixels; updated by sense()
+					// function
+     },
+     // define left sensor
+     {sense: senseDistance,
+      minVal: 0,
+      maxVal: 50,
+      attachAngle: -Math.PI/4 + 0.2,
+      lookAngle: -Math.PI/12,
+      id: 'distL',
+      parent: null,
+      value: null},
+      //Left touch sensor
+      {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: -Math.PI/4 - 0.1,
+       lookAngle: Math.PI/12,
+       id: 'touchL',
+       parent: null,
+       value: null},
+      //Right touch sensor
+       {sense: senseTouch,
+       minVal: 0,
+       maxVal: 6,
+       attachAngle: Math.PI/4 + 0.1,
+       lookAngle: -Math.PI/12,
+       id: 'touchR',
+       parent: null,
+       value: null}
+   ]
   }
 ];
 
@@ -192,7 +291,7 @@ simInfo = {
   curSteps: 0,  // increased by simStep()
   learningRate: 0.2, // Learning rate used for the weights.
   forgettingRate: 0.0067, // Forgetting rate used for the weights.
-  weights: {ll: [[],[],[]], lr: [[],[],[]], rl: [[],[],[]], rr: [[],[],[]]}
+  weights: {ll: [[],[],[],[],[]], lr: [[],[],[],[],[]], rl: [[],[],[],[],[]], rr: [[],[],[],[],[]]}
 };
 
 robots = new Array();
@@ -260,7 +359,7 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(1);  // requires defined simInfo.world
+  setRobotNumber(5);  // requires defined simInfo.world
   loadBay(robots[0]);
 
 };
@@ -854,6 +953,9 @@ function simStep() {
 	    	console.log("lr: " + simInfo.weights["lr"][s]);
 	    	console.log("rl: " + simInfo.weights["rl"][s]);
 	    	console.log("rr: " + simInfo.weights["rr"][s]);
+	    	
+	    	console.log("\n");
+	    	console.log("\n");
     	}	
     }
     
